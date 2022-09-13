@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"/>
+<body>
+<!-- Navigation-->
+<nav  th:replace="fragments/nav :: nav(${category!=null} ? ${category} : '',${username!=null} ? ${username} : null)"/>
+
+<!-- Header-->
+<header class="bg-dark py-5">
+    <div class="container px-4 px-lg-5 my-5">
+        <div class="text-center text-white">
+            <h1 class="display-4 fw-bolder">pet shop</h1>
+            <p class="lead fw-normal text-white-50 mb-0">강아지 용품aaaaaaaaaa</p>
+        </div>
+    </div>
+</header>
+<!-- Section-->
+<section class="py-5">
+    <div class="container px-4 px-lg-5 mt-5">
+        <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
+            <div class="col mb-5" th:each="itemDto :${homeItemDto}">
+                <div class="card h-100">
+                    <!-- Product image-->
+                    <img class="card-img-top" th:src="|/images/${itemDto.getImageSource()}|" alt="..."/>
+                    <!-- Product details-->
+                    <div class="card-body p-4">
+                        <div class="text-center">
+                            <!-- Product name-->
+                            <h5 class="fw-bolder" th:text="${itemDto.name}">제품명</h5>
+                            <!-- Product reviews-->
+                            <div class="d-flex justify-content-center small text-warning mb-2"
+                                 th:with="ratingNum=${itemDto.ratingStar}" th:if="${itemDto.ratingStar!=0}">
+                                <div class="bi-star-fill" th:each="num : ${#numbers.sequence(1,ratingNum)}"></div>
+                            </div>
+
+                            <!-- Product price-->
+                            <span th:class="${itemDto.discountPrice!=0} ?   'text-muted text-decoration-line-through' : ''"
+                                  th:text="${itemDto.price}"></span>
+                            <span th:if="${itemDto.discountPrice!=0}" th:text="${itemDto.discountPrice}">$20.00</span>
+                        </div>
+                    </div>
+                    <!-- Product actions-->
+                    <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                        <div class="text-center"><a class="btn btn-outline-dark mt-auto"
+                                                    th:href="@{/cart/add/{itemId} (itemId=${itemDto.id})}">Add to
+                            cart</a></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</section>
+<!-- Footer-->
+<footer th:replace="fragments/footer :: footer" />
+<!-- Bootstrap core JS-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Core theme JS-->
+<script src="/js/scripts.js"></script>
+</body>
+</html>

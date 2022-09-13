@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"/>
+<body>
+<!-- Navigation-->
+<nav th:replace="fragments/nav :: nav(${category!=null} ? ${category} : '',${username!=null} ? ${username} : null)"/>
+<!-- Header-->
+<header class="bg-dark py-5">
+    <link rel="stylesheet" href="/css/shoppingcart-web-new.ko_KR.css" type="text/css">
+    <div class="container px-4 px-lg-5 my-5">
+        <div class="text-center text-white">
+            <h1 class="display-4 fw-bolder">pet Store</h1>
+            <p class="lead fw-normal text-white-50 mb-0">개 많이 사주세요</p>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+</header>
+<!-- Section-->
+<section class="py-5">
+
+    <br>
+    <br>
+    <div>
+        <table class="table table-striped">
+
+            <thead>
+            <tr >
+                <th>#</th>
+                <th>대표상품 이름</th>
+                <th>대표상품 주문가격</th>
+                <th>대표상품 주문수량</th>
+                <th>상태</th>
+                <th>배송 상태</th>
+                <th>일시</th>
+                <th>버튼</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="orders : ${orderDto}">
+                <td th:text="${orders.orderId}"></td>
+                <td>
+                    <a th:text="${orders.orderItems[0].item.name}"
+                            th:href="@{/order/content/{orderId} (orderId=${orders.orderId})}" style="color: #0c63e4"></a>
+
+                </td>
+                <td th:text="${orders.orderItems[0].item.getRealPrice()}"></td>
+                <td th:text="${orders.orderItems[0].count}"></td>
+                <td th:text="${orders.orderStatus}"></td>
+                <td th:text="${orders.delivery.status}"></td>
+                <td th:text="${#temporals.format(orders.orderDate,'yyyy-MM-dd HH:mm')}"></td>
+                <td>
+                    <a th:if="${orders.orderStatus.name()=='PRE_ORDER'}"
+                       th:onclick="|location.href='@{/order/{orderId} (orderId=${orders.orderId})}'|"
+                       class="btn btn-danger">결제</a>
+                    <a th:if="${orders.orderStatus.name()!='CANCEL'}"
+                       th:onclick="|location.href='@{/order/cancel/{orderId} (orderId=${orders.orderId})}'|"
+                    class="btn btn-danger">CANCEL</a>
+
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+
+
+    </section>
+
+</section>
+<!-- Footer-->
+<!-- Footer-->
+<footer th:replace="fragments/footer :: footer"/>
+<!-- Bootstrap core JS-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Core theme JS-->
+<script src="/js/scripts.js"></script>
+</body>
+<script type="text/javascript">
+
+    $(function cancelOrder(orderId){
+        this.href = "/order/content/" + orderId;
+    })
+
+    $(function () {
+        $("#orderButton").on("click", function () {
+
+
+            let objParams = [];
+
+            $(".cart-deal-item").each(function (i) {
+                let itemId=($(this).find("#orderItemId").val());
+                let count=($(this).find("option:selected").val());
+
+
+
+                let objParam={
+                    "itemId": itemId,
+                    "count": count
+                }
+                objParams.push(objParam);
+
+            });
+
+            let button=this;
+
+            $.ajax({
+                url         : "/order/new",
+                dataType    : "json",
+                contentType : "application/json",
+                type        : "post",
+                data        : JSON.stringify(objParams),
+                success     : function(retVal){
+                    if (retVal.code == "OK") {
+                        location.href = "/order/order";
+                    }else if (retVal.code == "NOT_LOGIN") {
+                        alert(retVal.message);
+                        location.href = "/member/login";
+                    } else {
+                        alert(JSON.stringify(retVal));
+                        // button.prop('disabled', false);
+
+                    }
+                },
+                error   : function (request, status, error) {
+                    console.log("AJAX_ERROR");
+                }
+            })
+
+            this.prop('disabled', true);
+
+        });
+
+    });
+
+
+    // $(function () {
+    //     $("#orderButton").on("click", function () {
+    //
+    //         let objParams = [];
+    //
+    //         $(".cart-deal-item").each(function (i) {
+    //             let itemId=($(this).find("#orderItemId").val());
+    //             let count=($(this).find("option:selected").val());
+    //             let objParam={
+    //                 "itemId": itemId,
+    //                 "count": count
+    //             }
+    //             objParams.push(objParam);
+    //
+    //         });
+    //
+    //
+    //
+    //         let button=this;
+    //
+    //         $.ajax({
+    //             url         : "/order/new",
+    //             dataType    : "json",
+    //             contentType : "application/json",
+    //             type        : "post",
+    //             data        : JSON.stringify(objParams),
+    //             success     : function(retVal){
+    //                 if (retVal.code == "OK") {
+    //                     location.href = "/order/list";
+    //                 }else if (retVal.code == "NOT_LOGIN") {
+    //                     alert(retVal.message);
+    //                     location.href = "/member/login";
+    //                 } else {
+    //                     alert(JSON.stringify(retVal));
+    //                    // button.prop('disabled', false);
+    //
+    //                 }
+    //             },
+    //             error   : function (request, status, error) {
+    //                 console.log("AJAX_ERROR");
+    //             }
+    //         })
+    //
+    //         this.prop('disabled', true);
+    //
+    //     });
+    //
+    // });
+
+    $(function() {
+        $("#allCheck").on("click",function(){
+            if (this.checked) {
+                $(".dealSelectChk").prop("checked",true);
+
+            } else {
+                $(".dealSelectChk").prop("checked",false);
+
+            }
+        });
+    });
+
+    $(function() {
+        $(".quantity-select").on("change",function(){
+
+            let price = parseInt($(this).parent().siblings(".unit-cost").text());
+            let find = $(this).parents(".cart-deal-item").find(".unit-total-sale-price");
+            let id = $(this).parents(".cart-deal-item").find("#orderItemId").val();
+            let count = $(this).find("option:selected").val();
+            let unitTotalPrice = count * price;
+            console.log(unitTotalPrice);
+
+            console.log($(find).text());
+            $(find).text(unitTotalPrice);
+            updatePrice();
+
+            // 세션 업데이트 해야하므로 해당 오더아이템id 와 변경된 숫자를 같이 post로 보내줍니다..
+            $.post("/cart/update",
+                {orderItemId: id , count: count},
+                function (data,status){
+                    $("#text").html(data + "<br>" + status);
+                }
+            )
+
+
+        });
+    });
+
+
+
+    function updatePrice(jQuery) {
+        let skill = $(".unit-total-sale-price");
+        let totalPrice = 0;
+        skill.each(function (i) {
+            totalPrice += parseInt($(this).text());
+        });
+
+        $(".total-order-price").text(totalPrice.toString());
+    }
+
+    $(document).ready(updatePrice);
+
+    function cancel(id) {
+        var form = document.createElement("form");
+        form.setAttribute("method", "post");
+        form.setAttribute("action", "/orders/" + id + "/cancel");
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+
+
+
+</script>
+</html>

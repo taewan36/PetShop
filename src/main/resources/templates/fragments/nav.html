@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light" th:fragment="nav(category,username)">
+    <div class="container px-4 px-lg-5">
+        <a class="navbar-brand" href="/">Pet Store</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span
+                class="navbar-toggler-icon"></span></button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+                <li class="nav-item"><a class="nav-link active" aria-current="page" href="/">Home</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="/" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">Shop</a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="/item/all">All Products</a></li>
+                        <li>
+                            <hr class="dropdown-divider"/>
+                        </li>
+                        <li th:each="subCategory1 : ${category.subCategories}">
+                            <a class="dropdown-item" th:href="@{/item/category/{category_id} (category_id=${subCategory1.categoryId})}" th:text="${subCategory1.categoryName}">Popular Items</a>
+                            <div th:each="subCategory2 : ${subCategory1.subCategories}" th:if="${subCategory1.subCategories!=null}">
+                                <a class="dropdown-item" th:href="@{/item/category/{category_id} (category_id=${subCategory2.categoryId})}" th:text="|ㄴ${subCategory2.categoryName}|">Popular Items</a>
+                            </div>
+                            <hr class="dropdown-divider"/>
+                        </li>
+
+                    </ul>
+                </li>
+                <li class="nav-item" th:if="${username!=null}"><a class="nav-link" href="/order/list">주문목록</a></li>
+                <li class="nav-item" th:if="${username==null}"><a class="nav-link" href="/member/new">회원가입</a></li>
+                <li class="nav-item" th:if="${username==null}"><a class="nav-link" href="/member/login">로그인</a></li>
+                <li class="nav-item" th:if="${username!=null}"><a class="nav-link" href="/member/logout">로그아웃</a></li>
+                <li class="nav-item" th:if="${username!=null}"><a class="nav-link" href="/admin/home">어드민 홈</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/taewan36">깃허브</a></li>
+
+            </ul>
+            <form class="d-flex" action="/cart/list">
+                <button class="btn btn-outline-dark" type="submit">
+                    <i class="bi-cart-fill me-1"></i>
+                    Cart
+                    <span class="badge bg-dark text-white ms-1 rounded-pill" th:text="${cartSize}">0</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</nav>

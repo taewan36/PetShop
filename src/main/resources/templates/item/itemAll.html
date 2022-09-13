@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"/>
+<body>
+<!-- Navigation-->
+<nav th:replace="fragments/nav :: nav(${category!=null} ? ${category} : '',${username!=null} ? ${username} : null)"/>
+
+<!-- Header-->
+<header class="bg-dark py-5">
+    <div class="container px-4 px-lg-5 my-5">
+        <div class="text-center text-white">
+            <h1 class="display-4 fw-bolder">Pet Store</h1>
+        </div>
+    </div>
+</header>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Category</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <li th:each="subCategory1 : ${category.subCategories}">
+                    <a class="nav-link active"
+                       th:href="@{/item/category/{category_id} (category_id=${subCategory1.categoryId})}"
+                       th:text="${subCategory1.categoryName}">Popular Items</a>
+                    <div th:each="subCategory2 : ${subCategory1.subCategories}"
+                         th:if="${subCategory1.subCategories!=null}">
+                        <a class="dropdown-item"
+                           th:href="@{/item/category/{category_id} (category_id=${subCategory2.categoryId})}"
+                           th:text="|ㄴ${subCategory2.categoryName}|">Popular Items</a>
+                    </div>
+                    <hr class="dropdown-divider"/>
+                </li>
+
+            </div>
+        </div>
+    </div>
+</nav>
+<!-- Section-->
+<section class="py-5">
+
+    <div class="container row" style="float: none; margin: 0 auto; ">
+        <div class="col-md-5" style="float: none; margin: 0 auto;">
+            <form th:object="${itemSearch}" class="row gy-2 gx-2 align-items-center">
+                <div class="col-auto">
+                    <select th:field="*{searchType}" class="form-select">
+                        <option value="itemName">아이템 이름</option>
+                        <option value="categoryName">카테고리 이름</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <input type="text" th:field="*{keyword}" class="form-control" placeholder="키워드"/>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary mb-2">검색</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <br>
+
+
+    <div class="container">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center"
+                th:with="start=${T(Math).floor(homeItemDto.number/10)*10},
+                last=(${start + 9 < homeItemDto.totalPages ? start + 9 : homeItemDto.totalPages})">
+                <li class="page-item">
+                    <a class="page-link" th:href="@{/item/all(page=0)}" aria-label="First">
+                        <span aria-hidden="true">First</span>
+                    </a>
+                </li>
+                <li class="page-item" th:class="${homeItemDto.first} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="${homeItemDto.first} ? '#' : @{/item/all(page=${homeItemDto.number-1})}"
+                       aria-label="Previous">
+                        <span aria-hidden="true">Previous</span>
+                    </a>
+                </li>
+                <li class="page-item"
+                    th:each="page: ${last>=homeItemDto.totalPages}  ? ${#numbers.sequence(start,last-1)} : ${#numbers.sequence(start,last)}"
+                    th:class="${page== homeItemDto.number} ? 'page-item active'">
+                    <a class="page-link" th:href="@{/item/all(page=${page})}" th:text="${page+1}">
+                    </a>
+                </li>
+                <li class="page-item" th:class="${homeItemDto.last} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="${homeItemDto.last} ? '#' : @{/item/all(page=${homeItemDto.number+1})}"
+                       aria-label="Next">
+                        <span aria-hidden="true">Next</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" th:href="@{/item/all(page=${homeItemDto.totalPages-1})}" aria-label="Last">
+                        <span aria-hidden="true">Last</span>
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+    </div>
+
+
+    <div class="container px-4 px-lg-5 mt-5">
+
+
+        <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
+            <div class="col mb-5" th:each="itemDto :${homeItemDto}">
+                <div class="card h-100">
+                    <!-- Product image-->
+                    <img class="card-img-top" th:src="|/images/${itemDto.getImageSource()}|" alt="..."/>
+                    <!-- Product details-->
+                    <div class="card-body p-4">
+                        <div class="text-center">
+                            <!-- Product name-->
+                            <h5 class="fw-bolder" th:text="${itemDto.name}">제품명</h5>
+                            <!-- Product reviews-->
+                            <div class="d-flex justify-content-center small text-warning mb-2"
+                                 th:with="ratingNum=${itemDto.ratingStar}" th:if="${itemDto.ratingStar!=0}">
+                                <div class="bi-star-fill" th:each="num : ${#numbers.sequence(1,ratingNum)}"></div>
+                            </div>
+
+                            <!-- Product price-->
+                            <span th:class="${itemDto.discountPrice!=0} ?   'text-muted text-decoration-line-through' : ''"
+                                  th:text="${itemDto.price}"></span>
+                            <span th:if="${itemDto.discountPrice!=0}" th:text="${itemDto.discountPrice}">$20.00</span>
+                        </div>
+                    </div>
+                    <!-- Product actions-->
+                    <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                        <div class="text-center"><a class="btn btn-outline-dark mt-auto"
+                                                    th:href="@{/cart/add/{itemId} (itemId=${itemDto.id},requestURI=${#httpServletRequest.requestURI})}">Add
+                            to
+                            cart</a></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center"
+                th:with="start=${T(Math).floor(homeItemDto.number/10)*10},
+                last=(${start + 9 < homeItemDto.totalPages ? start + 9 : homeItemDto.totalPages})">
+                <li class="page-item">
+                    <a class="page-link" th:href="@{/item/all(page=0)}" aria-label="First">
+                        <span aria-hidden="true">First</span>
+                    </a>
+                </li>
+                <li class="page-item" th:class="${homeItemDto.first} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="${homeItemDto.first} ? '#' : @{/item/all(page=${homeItemDto.number-1})}"
+                       aria-label="Previous">
+                        <span aria-hidden="true">Previous</span>
+                    </a>
+                </li>
+                <li class="page-item"
+                    th:each="page: ${last>=homeItemDto.totalPages}  ? ${#numbers.sequence(start,last-1)} : ${#numbers.sequence(start,last)}"
+                    th:class="${page== homeItemDto.number} ? 'page-item active'">
+                    <a class="page-link" th:href="@{/item/all(page=${page})}" th:text="${page+1}">
+                    </a>
+                </li>
+                <li class="page-item" th:class="${homeItemDto.last} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="${homeItemDto.last} ? '#' : @{/item/all(page=${homeItemDto.number+1})}"
+                       aria-label="Next">
+                        <span aria-hidden="true">Next</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" th:href="@{/board(page=${homeItemDto.totalPages-1})}" aria-label="Last">
+                        <span aria-hidden="true">Last</span>
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+    </div>
+
+</section>
+<!-- Footer-->
+<footer th:replace="fragments/footer :: footer"/>
+<!-- Bootstrap core JS-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Core theme JS-->
+<script src="/js/scripts.js"></script>
+</body>
+</html>
